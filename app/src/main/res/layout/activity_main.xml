@@ -225,7 +225,7 @@
                             android:id="@+id/etMessage"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="top{start"
+                            android:gravity="top|start"
                             android:lines="3"
                             android:inputType="textMultiLine"
                             android:text="Are you coming home for dinner tonight? Don't forget to call me!" />
