@@ -36,7 +36,7 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Notification-Simulator-v1.1.0-APK
+          name: Notification-Simulator-v1.2.0-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
@@ -44,18 +44,18 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.0
-          name: Notification Simulator v1.1.0
+          tag_name: v1.2.0
+          name: Notification Simulator v1.2.0
           body: |
-            ### 📱 Notification Simulator v1.1.0
+            ### 📱 Notification Simulator v1.2.0
             
-            Simulate realistic WhatsApp and Google Messages notifications with customizable senders, messages, immediate test trigger, and scheduled timers.
+            Simulate authentic WhatsApp and Google Messages notifications with customizable senders, messages, instant test trigger, and scheduled timers.
             
-            **What's New in v1.1.0:**
-            - 💬 **Google Messages Support**: Simulate incoming text / SMS messages with Google blue styling, sender/phone number, and OTP auto-copy actions.
-            - 🟢 **WhatsApp Simulation**: Accurate WhatsApp styling, vector logo, and quick actions.
-            - 🎨 **New App Launcher Icon**: Replaced WhatsApp icon with dedicated simulator utility icon (`ic_launcher_sim`).
-            - 🧼 **Clean Notification Headers**: Removed any `"WA simulator"` branding from system notifications.
+            **What's New in v1.2.0:**
+            - 🟢 **Authentic WhatsApp Notifications**: Custom RemoteViews and channels ensuring notifications clearly display `"WhatsApp"` with the WhatsApp icon and badge.
+            - 🔵 **Authentic Messages Notifications**: Clearly displays `"Messages"` with the Google Messages icon and blue badge.
+            - 🌙 **Dark Mode Support**: Full DayNight theme support with an instant ☀️/🌙 toggle in the toolbar (persists in preferences).
+            - 🎨 **Modern Material 3 Design**: Live Notification Preview card that updates in real-time as you type, rounded squircle cards, and modern chips.
             
             Download the APK below and install it on your Android device.
           files: app/build/outputs/apk/debug/*.apk

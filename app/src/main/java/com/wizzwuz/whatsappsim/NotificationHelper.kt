@@ -10,13 +10,14 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import java.util.concurrent.atomic.AtomicInteger
 
-enum class AppType(val idName: String) {
-    WHATSAPP("whatsapp"),
-    GOOGLE_MESSAGES("google_messages");
+enum class AppType(val idName: String, val displayName: String) {
+    WHATSAPP("whatsapp", "WhatsApp"),
+    GOOGLE_MESSAGES("google_messages", "Messages");
 
     companion object {
         fun fromId(id: String?): AppType {
@@ -110,7 +111,8 @@ object NotificationHelper {
         val smallIcon: Int
         val largeIconRes: Int
         val accentColor: Int
-        val subText: String
+        val appDisplayName: String
+        val actionColor: Int
 
         when (appType) {
             AppType.WHATSAPP -> {
@@ -118,41 +120,70 @@ object NotificationHelper {
                 smallIcon = R.drawable.ic_whatsapp
                 largeIconRes = R.drawable.ic_whatsapp_large
                 accentColor = ContextCompat.getColor(context, R.color.wa_green)
-                subText = "WhatsApp"
+                appDisplayName = "WhatsApp"
+                actionColor = ContextCompat.getColor(context, R.color.wa_teal)
             }
             AppType.GOOGLE_MESSAGES -> {
                 channelId = CHANNEL_ID_MESSAGES
                 smallIcon = R.drawable.ic_google_messages
                 largeIconRes = R.drawable.ic_google_messages_large
                 accentColor = ContextCompat.getColor(context, R.color.google_blue)
-                subText = "Messages"
+                appDisplayName = "Messages"
+                actionColor = ContextCompat.getColor(context, R.color.google_blue)
             }
         }
 
         val largeIconBitmap = getBitmapFromVectorDrawable(context, largeIconRes)
         val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
+        // Setup Custom Collapsed View
+        val remoteCollapsed = RemoteViews(context.packageName, R.layout.notification_custom_collapsed).apply {
+            setImageViewResource(R.id.notifAvatar, largeIconRes)
+            setTextViewText(R.id.notifAppName, appDisplayName)
+            setTextViewText(R.id.notifSender, sender)
+            setTextViewText(R.id.notifMessage, message)
+        }
+
+        // Setup Custom Expanded View
+        val remoteExpanded = RemoteViews(context.packageName, R.layout.notification_custom_expanded).apply {
+            setImageViewResource(R.id.notifHeaderIcon, smallIcon)
+            setImageViewResource(R.id.notifAvatar, largeIconRes)
+            setTextViewText(R.id.notifAppName, appDisplayName)
+            setTextViewText(R.id.notifSender, sender)
+            setTextViewText(R.id.notifMessage, message)
+
+            val action1Text = if (appType == AppType.GOOGLE_MESSAGES && containsVerificationCode(message)) "Copy code" else "Reply"
+            setTextViewText(R.id.btnNotifAction1, action1Text)
+            setTextColor(R.id.btnNotifAction1, actionColor)
+            setOnClickPendingIntent(R.id.btnNotifAction1, action1Intent)
+
+            setTextViewText(R.id.btnNotifAction2, "Mark as read")
+            setOnClickPendingIntent(R.id.btnNotifAction2, action2Intent)
+        }
+
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(smallIcon)
             .setLargeIcon(largeIconBitmap)
             .setContentTitle(sender)
             .setContentText(message)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
-            .setSubText(subText)
+            .setSubText(appDisplayName)
             .setColor(accentColor)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setAutoCancel(true)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setSound(soundUri)
             .setVibrate(longArrayOf(0, 250, 250, 250))
             .setContentIntent(contentPendingIntent)
+            .setCustomContentView(remoteCollapsed)
+            .setCustomBigContentView(remoteExpanded)
+            .setCustomHeadsUpContentView(remoteCollapsed)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .addAction(0, context.getString(R.string.action_reply), action1Intent)
             .addAction(0, context.getString(R.string.action_mark_read), action2Intent)
 
-        // For Google Messages with OTP/Code, add Copy Code action if detected
         if (appType == AppType.GOOGLE_MESSAGES && containsVerificationCode(message)) {
-            builder.addAction(0, context.getString(R.string.action_copy_code), action2Intent)
+            builder.addAction(0, context.getString(R.string.action_copy_code), action1Intent)
         }
 
         notificationManager.notify(notificationIdCounter.incrementAndGet(), builder.build())

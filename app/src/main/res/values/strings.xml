@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App Label for Notifications -->
-    <string name="app_name">Messages</string>
+    <string name="app_name">NotifySim</string>
     <!-- App Label for Launcher Drawer -->
     <string name="launcher_name">NotifySim</string>
     <string name="title_simulator">Notification Simulator</string>

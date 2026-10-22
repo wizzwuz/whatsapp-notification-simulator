@@ -7,16 +7,20 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.wizzwuz.whatsappsim.databinding.ActivityMainBinding
@@ -49,10 +53,30 @@ class MainActivity : AppCompatActivity() {
 
         NotificationHelper.createChannels(this)
         checkNotificationPermission()
+        setupThemeToggle()
         setupAppTypeSelector()
+        setupLivePreviewListeners()
         setupPresets()
         setupDelayChips()
         setupActionButtons()
+        updateLivePreview()
+    }
+
+    private fun setupThemeToggle() {
+        val prefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val isNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+        binding.btnThemeToggle.setImageResource(if (isNightMode) R.drawable.ic_light_mode else R.drawable.ic_dark_mode)
+
+        binding.btnThemeToggle.setOnClickListener {
+            val currentNight = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+            val newNight = !currentNight
+            prefs.edit().putBoolean("dark_mode", newNight).apply()
+
+            AppCompatDelegate.setDefaultNightMode(
+                if (newNight) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            )
+        }
     }
 
     private fun checkNotificationPermission() {
@@ -80,12 +104,6 @@ class MainActivity : AppCompatActivity() {
     private fun switchToWhatsAppMode() {
         selectedAppType = AppType.WHATSAPP
 
-        binding.ivAppIconPreview.setImageResource(R.drawable.ic_whatsapp_large)
-        binding.layoutAppBanner.setBackgroundColor(Color.parseColor("#F0FDF4"))
-        binding.tvAppModeDescription.setTextColor(ContextCompat.getColor(this, R.color.wa_teal_dark))
-        binding.tvAppModeDescription.text =
-            "Simulating WhatsApp chat notification with green badge and quick reply."
-
         binding.btnTestNow.backgroundTintList =
             ColorStateList.valueOf(ContextCompat.getColor(this, R.color.wa_green))
 
@@ -100,16 +118,12 @@ class MainActivity : AppCompatActivity() {
 
         binding.etSender.setText("Mom ❤️")
         binding.etMessage.setText("Are you coming home for dinner tonight? Don't forget to call me!")
+
+        updateLivePreview()
     }
 
     private fun switchToGoogleMessagesMode() {
         selectedAppType = AppType.GOOGLE_MESSAGES
-
-        binding.ivAppIconPreview.setImageResource(R.drawable.ic_google_messages_large)
-        binding.layoutAppBanner.setBackgroundColor(Color.parseColor("#EFF6FF"))
-        binding.tvAppModeDescription.setTextColor(ContextCompat.getColor(this, R.color.google_blue_dark))
-        binding.tvAppModeDescription.text =
-            "Simulating Google Messages (SMS) notification with blue icon, sender/number, and OTP support."
 
         binding.btnTestNow.backgroundTintList =
             ColorStateList.valueOf(ContextCompat.getColor(this, R.color.google_blue))
@@ -125,12 +139,69 @@ class MainActivity : AppCompatActivity() {
 
         binding.etSender.setText("Google")
         binding.etMessage.setText("G-749201 is your Google verification code. Do not share this code with anyone.")
+
+        updateLivePreview()
+    }
+
+    private fun setupLivePreviewListeners() {
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateLivePreview()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        }
+        binding.etSender.addTextChangedListener(textWatcher)
+        binding.etMessage.addTextChangedListener(textWatcher)
+    }
+
+    private fun updateLivePreview() {
+        val sender = binding.etSender.text?.toString()?.trim()
+            ?.ifEmpty { if (selectedAppType == AppType.WHATSAPP) "WhatsApp Contact" else "Messages" }
+            ?: "Messages"
+        val message = binding.etMessage.text?.toString()?.trim()
+            ?.ifEmpty { "Notification message content..." }
+            ?: "Notification message content..."
+
+        binding.tvPreviewSender.text = sender
+        binding.tvPreviewMessage.text = message
+
+        when (selectedAppType) {
+            AppType.WHATSAPP -> {
+                binding.tvPreviewAppName.text = "WhatsApp"
+                binding.ivPreviewSmallIcon.setImageResource(R.drawable.ic_whatsapp)
+                binding.ivPreviewSmallIcon.imageTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.wa_green))
+                binding.ivPreviewAvatar.setImageResource(R.drawable.ic_whatsapp_large)
+
+                binding.tvPreviewAction1.text = "Reply"
+                binding.tvPreviewAction1.setTextColor(ContextCompat.getColor(this, R.color.wa_teal))
+                binding.tvPreviewAction2.visibility = View.VISIBLE
+            }
+            AppType.GOOGLE_MESSAGES -> {
+                binding.tvPreviewAppName.text = "Messages"
+                binding.ivPreviewSmallIcon.setImageResource(R.drawable.ic_google_messages)
+                binding.ivPreviewSmallIcon.imageTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.google_blue))
+                binding.ivPreviewAvatar.setImageResource(R.drawable.ic_google_messages_large)
+
+                val hasCode = message.lowercase().let {
+                    it.contains("code") || it.contains("otp") || it.contains("verification")
+                }
+                binding.tvPreviewAction1.text = if (hasCode) "Copy code" else "Reply"
+                binding.tvPreviewAction1.setTextColor(ContextCompat.getColor(this, R.color.google_blue))
+                binding.tvPreviewAction2.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun setupPresets() {
         val onSenderClicked = View.OnClickListener { v ->
             val chip = v as? com.google.android.material.chip.Chip
-            chip?.text?.toString()?.let { binding.etSender.setText(it) }
+            chip?.text?.toString()?.let {
+                binding.etSender.setText(it)
+                updateLivePreview()
+            }
         }
         binding.chipSender1.setOnClickListener(onSenderClicked)
         binding.chipSender2.setOnClickListener(onSenderClicked)
@@ -139,7 +210,10 @@ class MainActivity : AppCompatActivity() {
 
         val onMsgClicked = View.OnClickListener { v ->
             val chip = v as? com.google.android.material.chip.Chip
-            chip?.text?.toString()?.let { binding.etMessage.setText(it) }
+            chip?.text?.toString()?.let {
+                binding.etMessage.setText(it)
+                updateLivePreview()
+            }
         }
         binding.chipMsgTemplate1.setOnClickListener(onMsgClicked)
         binding.chipMsgTemplate2.setOnClickListener(onMsgClicked)

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.WhatsAppSim" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/wa_teal</item>
@@ -5,7 +6,8 @@
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/wa_green</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="android:statusBarColor">@color/wa_teal_dark</item>
+        <item name="android:statusBarColor">@color/app_bar_bg</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@color/bg_page</item>
     </style>
 </resources>
