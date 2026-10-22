@@ -36,7 +36,7 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WhatsApp-Notification-Simulator-APK
+          name: Notification-Simulator-v1.1.0-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
@@ -44,18 +44,18 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: WhatsApp Notification Simulator v1.0.0
+          tag_name: v1.1.0
+          name: Notification Simulator v1.1.0
           body: |
-            ### 📱 WhatsApp Notification Simulator v1.0.0
+            ### 📱 Notification Simulator v1.1.0
             
-            Simulate realistic WhatsApp notifications with custom sender names, custom messages, instant test trigger, and scheduled timers.
+            Simulate realistic WhatsApp and Google Messages notifications with customizable senders, messages, immediate test trigger, and scheduled timers.
             
-            **Features:**
-            - 💬 Custom sender name & message content
-            - ⏱️ Immediate test notification & customizable delay timer (5s, 10s, 30s, 1m, 5m)
-            - 🟢 Authentic WhatsApp notification icon & styling
-            - 🚀 Android 13+ & 14+ POST_NOTIFICATIONS permission support
+            **What's New in v1.1.0:**
+            - 💬 **Google Messages Support**: Simulate incoming text / SMS messages with Google blue styling, sender/phone number, and OTP auto-copy actions.
+            - 🟢 **WhatsApp Simulation**: Accurate WhatsApp styling, vector logo, and quick actions.
+            - 🎨 **New App Launcher Icon**: Replaced WhatsApp icon with dedicated simulator utility icon (`ic_launcher_sim`).
+            - 🧼 **Clean Notification Headers**: Removed any `"WA simulator"` branding from system notifications.
             
             Download the APK below and install it on your Android device.
           files: app/build/outputs/apk/debug/*.apk

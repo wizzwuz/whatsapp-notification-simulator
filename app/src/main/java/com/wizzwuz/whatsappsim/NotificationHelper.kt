@@ -14,23 +14,40 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import java.util.concurrent.atomic.AtomicInteger
 
+enum class AppType(val idName: String) {
+    WHATSAPP("whatsapp"),
+    GOOGLE_MESSAGES("google_messages");
+
+    companion object {
+        fun fromId(id: String?): AppType {
+            return values().firstOrNull { it.idName.equals(id, ignoreCase = true) } ?: WHATSAPP
+        }
+    }
+}
+
 object NotificationHelper {
 
-    const val CHANNEL_ID = "whatsapp_messages_channel"
-    private const val CHANNEL_NAME = "WhatsApp Messages"
-    private const val CHANNEL_DESC = "Incoming simulated WhatsApp messages"
+    private const val CHANNEL_ID_WA = "whatsapp_channel"
+    private const val CHANNEL_NAME_WA = "WhatsApp"
 
-    private val notificationIdCounter = AtomicInteger(1001)
+    private const val CHANNEL_ID_MESSAGES = "google_messages_channel"
+    private const val CHANNEL_NAME_MESSAGES = "Messages"
 
-    fun createNotificationChannel(context: Context) {
+    private val notificationIdCounter = AtomicInteger(2001)
+
+    fun createChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
+
+            // WhatsApp Channel
+            val waChannel = NotificationChannel(
+                CHANNEL_ID_WA,
+                CHANNEL_NAME_WA,
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = CHANNEL_DESC
+                description = "Incoming WhatsApp messages"
                 enableLights(true)
                 lightColor = Color.parseColor("#25D366")
                 enableVibration(true)
@@ -38,20 +55,33 @@ object NotificationHelper {
                 lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
                 setSound(soundUri, null)
             }
+            notificationManager.createNotificationChannel(waChannel)
 
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            // Google Messages Channel
+            val gmChannel = NotificationChannel(
+                CHANNEL_ID_MESSAGES,
+                CHANNEL_NAME_MESSAGES,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Incoming text and SMS messages"
+                enableLights(true)
+                lightColor = Color.parseColor("#1A73E8")
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 250, 250, 250)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+                setSound(soundUri, null)
+            }
+            notificationManager.createNotificationChannel(gmChannel)
         }
     }
 
-    fun showNotification(context: Context, sender: String, message: String) {
-        createNotificationChannel(context)
+    fun showNotification(context: Context, appType: AppType, sender: String, message: String) {
+        createChannels(context)
 
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Intent to open MainActivity when notification is tapped
+        // Intent to open MainActivity
         val openIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -62,34 +92,54 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Mock "Reply" action intent
-        val replyPendingIntent = PendingIntent.getActivity(
+        val action1Intent = PendingIntent.getActivity(
             context,
             1,
             openIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Mock "Mark as read" action intent
-        val markReadPendingIntent = PendingIntent.getActivity(
+        val action2Intent = PendingIntent.getActivity(
             context,
             2,
             openIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val largeIconBitmap = getBitmapFromVectorDrawable(context, R.drawable.ic_whatsapp_large)
+        val channelId: String
+        val smallIcon: Int
+        val largeIconRes: Int
+        val accentColor: Int
+        val subText: String
 
+        when (appType) {
+            AppType.WHATSAPP -> {
+                channelId = CHANNEL_ID_WA
+                smallIcon = R.drawable.ic_whatsapp
+                largeIconRes = R.drawable.ic_whatsapp_large
+                accentColor = ContextCompat.getColor(context, R.color.wa_green)
+                subText = "WhatsApp"
+            }
+            AppType.GOOGLE_MESSAGES -> {
+                channelId = CHANNEL_ID_MESSAGES
+                smallIcon = R.drawable.ic_google_messages
+                largeIconRes = R.drawable.ic_google_messages_large
+                accentColor = ContextCompat.getColor(context, R.color.google_blue)
+                subText = "Messages"
+            }
+        }
+
+        val largeIconBitmap = getBitmapFromVectorDrawable(context, largeIconRes)
         val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_whatsapp)
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(smallIcon)
             .setLargeIcon(largeIconBitmap)
             .setContentTitle(sender)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
-            .setSubText("WhatsApp")
-            .setColor(ContextCompat.getColor(context, R.color.wa_green))
+            .setSubText(subText)
+            .setColor(accentColor)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setAutoCancel(true)
@@ -97,11 +147,20 @@ object NotificationHelper {
             .setSound(soundUri)
             .setVibrate(longArrayOf(0, 250, 250, 250))
             .setContentIntent(contentPendingIntent)
-            .addAction(0, context.getString(R.string.action_reply), replyPendingIntent)
-            .addAction(0, context.getString(R.string.action_mark_read), markReadPendingIntent)
-            .build()
+            .addAction(0, context.getString(R.string.action_reply), action1Intent)
+            .addAction(0, context.getString(R.string.action_mark_read), action2Intent)
 
-        notificationManager.notify(notificationIdCounter.incrementAndGet(), notification)
+        // For Google Messages with OTP/Code, add Copy Code action if detected
+        if (appType == AppType.GOOGLE_MESSAGES && containsVerificationCode(message)) {
+            builder.addAction(0, context.getString(R.string.action_copy_code), action2Intent)
+        }
+
+        notificationManager.notify(notificationIdCounter.incrementAndGet(), builder.build())
+    }
+
+    private fun containsVerificationCode(text: String): Boolean {
+        val lower = text.lowercase()
+        return lower.contains("code") || lower.contains("otp") || lower.contains("verification") || lower.contains("login")
     }
 
     private fun getBitmapFromVectorDrawable(context: Context, drawableId: Int): Bitmap? {

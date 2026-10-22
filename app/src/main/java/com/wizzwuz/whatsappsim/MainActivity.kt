@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -22,6 +24,7 @@ import com.wizzwuz.whatsappsim.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private var selectedAppType: AppType = AppType.WHATSAPP
     private var selectedDelaySeconds: Int = 5
     private var scheduledPendingIntent: PendingIntent? = null
     private var countDownTimer: CountDownTimer? = null
@@ -44,8 +47,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        NotificationHelper.createNotificationChannel(this)
+        NotificationHelper.createChannels(this)
         checkNotificationPermission()
+        setupAppTypeSelector()
         setupPresets()
         setupDelayChips()
         setupActionButtons()
@@ -63,23 +67,83 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupPresets() {
-        // Sender Presets
-        binding.chipMom.setOnClickListener { binding.etSender.setText(getString(R.string.preset_mom)) }
-        binding.chipBoss.setOnClickListener { binding.etSender.setText(getString(R.string.preset_boss)) }
-        binding.chipBank.setOnClickListener { binding.etSender.setText(getString(R.string.preset_bank)) }
-        binding.chipCrush.setOnClickListener { binding.etSender.setText(getString(R.string.preset_crush)) }
+    private fun setupAppTypeSelector() {
+        binding.chipGroupAppType.setOnCheckedStateChangeListener { _, checkedIds ->
+            if (checkedIds.contains(R.id.chipAppGoogleMessages)) {
+                switchToGoogleMessagesMode()
+            } else {
+                switchToWhatsAppMode()
+            }
+        }
+    }
 
-        // Message Presets
-        binding.chipMsg1.setOnClickListener {
-            binding.etMessage.setText(binding.chipMsg1.text.toString())
+    private fun switchToWhatsAppMode() {
+        selectedAppType = AppType.WHATSAPP
+
+        binding.ivAppIconPreview.setImageResource(R.drawable.ic_whatsapp_large)
+        binding.layoutAppBanner.setBackgroundColor(Color.parseColor("#F0FDF4"))
+        binding.tvAppModeDescription.setTextColor(ContextCompat.getColor(this, R.color.wa_teal_dark))
+        binding.tvAppModeDescription.text =
+            "Simulating WhatsApp chat notification with green badge and quick reply."
+
+        binding.btnTestNow.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.wa_green))
+
+        binding.chipSender1.text = "Mom ❤️"
+        binding.chipSender2.text = "Boss 💼"
+        binding.chipSender3.text = "Best Friend 🤝"
+        binding.chipSender4.text = "Crush ✨"
+
+        binding.chipMsgTemplate1.text = "Hey, are you free now?"
+        binding.chipMsgTemplate2.text = "Where are you? We are waiting."
+        binding.chipMsgTemplate3.text = "Important: Call me ASAP!"
+
+        binding.etSender.setText("Mom ❤️")
+        binding.etMessage.setText("Are you coming home for dinner tonight? Don't forget to call me!")
+    }
+
+    private fun switchToGoogleMessagesMode() {
+        selectedAppType = AppType.GOOGLE_MESSAGES
+
+        binding.ivAppIconPreview.setImageResource(R.drawable.ic_google_messages_large)
+        binding.layoutAppBanner.setBackgroundColor(Color.parseColor("#EFF6FF"))
+        binding.tvAppModeDescription.setTextColor(ContextCompat.getColor(this, R.color.google_blue_dark))
+        binding.tvAppModeDescription.text =
+            "Simulating Google Messages (SMS) notification with blue icon, sender/number, and OTP support."
+
+        binding.btnTestNow.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.google_blue))
+
+        binding.chipSender1.text = "Google"
+        binding.chipSender2.text = "Uber"
+        binding.chipSender3.text = "+1 (555) 019-2834"
+        binding.chipSender4.text = "Bank Alert"
+
+        binding.chipMsgTemplate1.text = "G-749201 is your Google verification code."
+        binding.chipMsgTemplate2.text = "Your driver is arriving in 2 mins."
+        binding.chipMsgTemplate3.text = "Security alert: New sign-in to your account."
+
+        binding.etSender.setText("Google")
+        binding.etMessage.setText("G-749201 is your Google verification code. Do not share this code with anyone.")
+    }
+
+    private fun setupPresets() {
+        val onSenderClicked = View.OnClickListener { v ->
+            val chip = v as? com.google.android.material.chip.Chip
+            chip?.text?.toString()?.let { binding.etSender.setText(it) }
         }
-        binding.chipMsg2.setOnClickListener {
-            binding.etMessage.setText(binding.chipMsg2.text.toString())
+        binding.chipSender1.setOnClickListener(onSenderClicked)
+        binding.chipSender2.setOnClickListener(onSenderClicked)
+        binding.chipSender3.setOnClickListener(onSenderClicked)
+        binding.chipSender4.setOnClickListener(onSenderClicked)
+
+        val onMsgClicked = View.OnClickListener { v ->
+            val chip = v as? com.google.android.material.chip.Chip
+            chip?.text?.toString()?.let { binding.etMessage.setText(it) }
         }
-        binding.chipMsg3.setOnClickListener {
-            binding.etMessage.setText(binding.chipMsg3.text.toString())
-        }
+        binding.chipMsgTemplate1.setOnClickListener(onMsgClicked)
+        binding.chipMsgTemplate2.setOnClickListener(onMsgClicked)
+        binding.chipMsgTemplate3.setOnClickListener(onMsgClicked)
     }
 
     private fun setupDelayChips() {
@@ -99,20 +163,21 @@ class MainActivity : AppCompatActivity() {
         // Test Now (Immediate)
         binding.btnTestNow.setOnClickListener {
             val sender = binding.etSender.text?.toString()?.trim()
-                ?.ifEmpty { "WhatsApp Contact" } ?: "WhatsApp Contact"
+                ?.ifEmpty { if (selectedAppType == AppType.WHATSAPP) "WhatsApp Contact" else "Messages" }
+                ?: "Messages"
             val message = binding.etMessage.text?.toString()?.trim()
-                ?.ifEmpty { "Hello! This is a test WhatsApp message." }
-                ?: "Hello! This is a test WhatsApp message."
+                ?.ifEmpty { "Hello! This is a simulated notification." }
+                ?: "Hello! This is a simulated notification."
 
             if (binding.switchAutoMinimize.isChecked) {
                 // Minimize app to home screen so heads-up notification drops from the top
                 moveTaskToBack(true)
                 Handler(Looper.getMainLooper()).postDelayed({
-                    NotificationHelper.showNotification(applicationContext, sender, message)
+                    NotificationHelper.showNotification(applicationContext, selectedAppType, sender, message)
                 }, 400)
             } else {
-                NotificationHelper.showNotification(this, sender, message)
-                Snackbar.make(binding.root, "WhatsApp notification sent!", Snackbar.LENGTH_SHORT).show()
+                NotificationHelper.showNotification(this, selectedAppType, sender, message)
+                Snackbar.make(binding.root, "Notification sent!", Snackbar.LENGTH_SHORT).show()
             }
         }
 
@@ -129,18 +194,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun scheduleNotification() {
         val sender = binding.etSender.text?.toString()?.trim()
-            ?.ifEmpty { "WhatsApp Contact" } ?: "WhatsApp Contact"
+            ?.ifEmpty { if (selectedAppType == AppType.WHATSAPP) "WhatsApp Contact" else "Messages" }
+            ?: "Messages"
         val message = binding.etMessage.text?.toString()?.trim()
-            ?.ifEmpty { "Hello! This is a scheduled WhatsApp message." }
-            ?: "Hello! This is a scheduled WhatsApp message."
+            ?.ifEmpty { "Hello! This is a scheduled notification." }
+            ?: "Hello! This is a scheduled notification."
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, NotificationPublisherReceiver::class.java).apply {
+            putExtra(NotificationPublisherReceiver.EXTRA_APP_TYPE, selectedAppType.idName)
             putExtra(NotificationPublisherReceiver.EXTRA_SENDER, sender)
             putExtra(NotificationPublisherReceiver.EXTRA_MESSAGE, message)
         }
 
-        val requestCode = 2001
+        val requestCode = 2002
         val pendingIntent = PendingIntent.getBroadcast(
             this,
             requestCode,
@@ -166,7 +233,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         } catch (e: SecurityException) {
-            // Fallback for strict exact alarm restrictions
             alarmManager.set(
                 AlarmManager.RTC_WAKEUP,
                 triggerAtMillis,

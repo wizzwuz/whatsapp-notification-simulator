@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- Google Messages Blue Circle Background -->
+  <path
+      android:fillColor="#1A73E8"
+      android:pathData="M24,2C11.85,2 2,11.85 2,24C2,36.15 11.85,46 24,46C36.15,46 46,36.15 46,24C46,11.85 36.15,2 24,2Z"/>
+  <!-- Google Messages Chat Bubble -->
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M35,14 H13 C11.35,14 10,15.35 10,17 V31 C10,32.65 11.35,34 13,34 H16 V38 L21,34 H35 C36.65,34 38,32.65 38,31 V17 C38,15.35 36.65,14 35,14 Z"/>
+  <!-- Chat message lines -->
+  <path
+      android:fillColor="#1A73E8"
+      android:pathData="M16,19 H32 V21 H16 Z M16,23 H28 V25 H16 Z M16,27 H24 V29 H16 Z"/>
+</vector>
