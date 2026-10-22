@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">WA Simulator</string>
+    <string name="title_simulator">WhatsApp Notification Simulator</string>
+    <string name="subtitle_simulator">Customize and simulate incoming WhatsApp notifications</string>
+    
+    <string name="sender_name_label">Sender Name</string>
+    <string name="sender_name_hint">e.g. John Doe, Mom, Boss</string>
+    
+    <string name="message_text_label">Message Text</string>
+    <string name="message_text_hint">Type message content here...</string>
+    
+    <string name="quick_senders">Quick Presets:</string>
+    <string name="preset_mom">Mom ❤️</string>
+    <string name="preset_boss">Boss 💼</string>
+    <string name="preset_bank">Bank Alert 🏦</string>
+    <string name="preset_crush">Crush ✨</string>
+    
+    <string name="delay_label">Schedule Delay</string>
+    <string name="delay_seconds">%1$d seconds</string>
+    
+    <string name="btn_test_now">Test Notification (Instant)</string>
+    <string name="btn_schedule">Schedule Notification</string>
+    <string name="btn_cancel_schedule">Cancel Scheduled</string>
+    
+    <string name="notification_channel_name">WhatsApp Messages</string>
+    <string name="notification_channel_desc">Simulated WhatsApp incoming chat notifications</string>
+    
+    <string name="action_reply">Reply</string>
+    <string name="action_mark_read">Mark as read</string>
+    
+    <string name="msg_scheduled">Notification scheduled in %1$d seconds! Minimize the app or lock the screen.</string>
+    <string name="msg_cancelled">Scheduled notification cancelled.</string>
+    <string name="msg_permission_required">Notification permission is required to display simulated messages.</string>
+</resources>
