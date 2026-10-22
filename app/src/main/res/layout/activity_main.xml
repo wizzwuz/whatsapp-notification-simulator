@@ -245,7 +245,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Sender Card -->
+            <!-- Sender Card (Clean without presets) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -277,57 +277,13 @@
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_primary"
                             android:inputType="textPersonName"
-                            android:text="Mom ❤️" />
+                            android:text="John Doe" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="6dp"
-                        android:text="@string/quick_senders"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <!-- Quick sender presets -->
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupSender"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipSender1"
-                            style="@style/Widget.MaterialComponents.Chip.Action"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Mom ❤️" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipSender2"
-                            style="@style/Widget.MaterialComponents.Chip.Action"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Boss 💼" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipSender3"
-                            style="@style/Widget.MaterialComponents.Chip.Action"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Google" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipSender4"
-                            style="@style/Widget.MaterialComponents.Chip.Action"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="+1 (555) 019-2834" />
-
-                    </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Message Card -->
+            <!-- Message Card (Clean without presets) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -361,46 +317,9 @@
                             android:lines="3"
                             android:textColor="@color/text_primary"
                             android:inputType="textMultiLine"
-                            android:text="Are you coming home for dinner tonight? Don't forget to call me!" />
+                            android:text="Hey, are you free right now?" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="6dp"
-                        android:text="@string/quick_messages"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <!-- Quick message templates -->
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupMessages"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipMsgTemplate1"
-                            style="@style/Widget.MaterialComponents.Chip.Action"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Hey, are you free now?" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipMsgTemplate2"
-                            style="@style/Widget.MaterialComponents.Chip.Action"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="G-749201 is your Google verification code." />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipMsgTemplate3"
-                            style="@style/Widget.MaterialComponents.Chip.Action"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Important: Call me ASAP!" />
-
-                    </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

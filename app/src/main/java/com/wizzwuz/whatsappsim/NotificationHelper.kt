@@ -10,7 +10,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
-import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import java.util.concurrent.atomic.AtomicInteger
@@ -111,8 +110,7 @@ object NotificationHelper {
         val smallIcon: Int
         val largeIconRes: Int
         val accentColor: Int
-        val appDisplayName: String
-        val actionColor: Int
+        val subText: String
 
         when (appType) {
             AppType.WHATSAPP -> {
@@ -120,53 +118,28 @@ object NotificationHelper {
                 smallIcon = R.drawable.ic_whatsapp
                 largeIconRes = R.drawable.ic_whatsapp_large
                 accentColor = ContextCompat.getColor(context, R.color.wa_green)
-                appDisplayName = "WhatsApp"
-                actionColor = ContextCompat.getColor(context, R.color.wa_teal)
+                subText = "WhatsApp"
             }
             AppType.GOOGLE_MESSAGES -> {
                 channelId = CHANNEL_ID_MESSAGES
                 smallIcon = R.drawable.ic_google_messages
                 largeIconRes = R.drawable.ic_google_messages_large
                 accentColor = ContextCompat.getColor(context, R.color.google_blue)
-                appDisplayName = "Messages"
-                actionColor = ContextCompat.getColor(context, R.color.google_blue)
+                subText = "Messages"
             }
         }
 
         val largeIconBitmap = getBitmapFromVectorDrawable(context, largeIconRes)
         val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
-        // Setup Custom Collapsed View
-        val remoteCollapsed = RemoteViews(context.packageName, R.layout.notification_custom_collapsed).apply {
-            setImageViewResource(R.id.notifAvatar, largeIconRes)
-            setTextViewText(R.id.notifAppName, appDisplayName)
-            setTextViewText(R.id.notifSender, sender)
-            setTextViewText(R.id.notifMessage, message)
-        }
-
-        // Setup Custom Expanded View
-        val remoteExpanded = RemoteViews(context.packageName, R.layout.notification_custom_expanded).apply {
-            setImageViewResource(R.id.notifHeaderIcon, smallIcon)
-            setImageViewResource(R.id.notifAvatar, largeIconRes)
-            setTextViewText(R.id.notifAppName, appDisplayName)
-            setTextViewText(R.id.notifSender, sender)
-            setTextViewText(R.id.notifMessage, message)
-
-            val action1Text = if (appType == AppType.GOOGLE_MESSAGES && containsVerificationCode(message)) "Copy code" else "Reply"
-            setTextViewText(R.id.btnNotifAction1, action1Text)
-            setTextColor(R.id.btnNotifAction1, actionColor)
-            setOnClickPendingIntent(R.id.btnNotifAction1, action1Intent)
-
-            setTextViewText(R.id.btnNotifAction2, "Mark as read")
-            setOnClickPendingIntent(R.id.btnNotifAction2, action2Intent)
-        }
-
+        // Native Android notification builder with native text rendering
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(smallIcon)
             .setLargeIcon(largeIconBitmap)
             .setContentTitle(sender)
             .setContentText(message)
-            .setSubText(appDisplayName)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setSubText(subText)
             .setColor(accentColor)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
@@ -175,10 +148,6 @@ object NotificationHelper {
             .setSound(soundUri)
             .setVibrate(longArrayOf(0, 250, 250, 250))
             .setContentIntent(contentPendingIntent)
-            .setCustomContentView(remoteCollapsed)
-            .setCustomBigContentView(remoteExpanded)
-            .setCustomHeadsUpContentView(remoteCollapsed)
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .addAction(0, context.getString(R.string.action_reply), action1Intent)
             .addAction(0, context.getString(R.string.action_mark_read), action2Intent)
 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App Label for Notifications -->
-    <string name="app_name">NotifySim</string>
+    <string name="app_name">Messages</string>
     <!-- App Label for Launcher Drawer -->
-    <string name="launcher_name">NotifySim</string>
+    <string name="launcher_name">Messages</string>
     <string name="title_simulator">Notification Simulator</string>
     <string name="subtitle_simulator">Simulate WhatsApp and Google Messages notifications</string>
 
@@ -13,13 +13,10 @@
     <string name="app_type_google_messages">Google Messages 🔵</string>
 
     <string name="sender_name_label">Sender / Contact / Number</string>
-    <string name="sender_name_hint">e.g. Google, Mom, +1 555-0199</string>
+    <string name="sender_name_hint">e.g. John, Mom, Google, +1 555-0199</string>
 
     <string name="message_text_label">Message Content</string>
     <string name="message_text_hint">Type simulated message here...</string>
-
-    <string name="quick_senders">Quick Sender Presets:</string>
-    <string name="quick_messages">Quick Message Templates:</string>
 
     <string name="delay_label">Schedule Delay</string>
 

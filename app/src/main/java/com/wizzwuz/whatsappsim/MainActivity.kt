@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -56,7 +55,6 @@ class MainActivity : AppCompatActivity() {
         setupThemeToggle()
         setupAppTypeSelector()
         setupLivePreviewListeners()
-        setupPresets()
         setupDelayChips()
         setupActionButtons()
         updateLivePreview()
@@ -94,53 +92,16 @@ class MainActivity : AppCompatActivity() {
     private fun setupAppTypeSelector() {
         binding.chipGroupAppType.setOnCheckedStateChangeListener { _, checkedIds ->
             if (checkedIds.contains(R.id.chipAppGoogleMessages)) {
-                switchToGoogleMessagesMode()
+                selectedAppType = AppType.GOOGLE_MESSAGES
+                binding.btnTestNow.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.google_blue))
             } else {
-                switchToWhatsAppMode()
+                selectedAppType = AppType.WHATSAPP
+                binding.btnTestNow.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.wa_green))
             }
+            updateLivePreview()
         }
-    }
-
-    private fun switchToWhatsAppMode() {
-        selectedAppType = AppType.WHATSAPP
-
-        binding.btnTestNow.backgroundTintList =
-            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.wa_green))
-
-        binding.chipSender1.text = "Mom ❤️"
-        binding.chipSender2.text = "Boss 💼"
-        binding.chipSender3.text = "Best Friend 🤝"
-        binding.chipSender4.text = "Crush ✨"
-
-        binding.chipMsgTemplate1.text = "Hey, are you free now?"
-        binding.chipMsgTemplate2.text = "Where are you? We are waiting."
-        binding.chipMsgTemplate3.text = "Important: Call me ASAP!"
-
-        binding.etSender.setText("Mom ❤️")
-        binding.etMessage.setText("Are you coming home for dinner tonight? Don't forget to call me!")
-
-        updateLivePreview()
-    }
-
-    private fun switchToGoogleMessagesMode() {
-        selectedAppType = AppType.GOOGLE_MESSAGES
-
-        binding.btnTestNow.backgroundTintList =
-            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.google_blue))
-
-        binding.chipSender1.text = "Google"
-        binding.chipSender2.text = "Uber"
-        binding.chipSender3.text = "+1 (555) 019-2834"
-        binding.chipSender4.text = "Bank Alert"
-
-        binding.chipMsgTemplate1.text = "G-749201 is your Google verification code."
-        binding.chipMsgTemplate2.text = "Your driver is arriving in 2 mins."
-        binding.chipMsgTemplate3.text = "Security alert: New sign-in to your account."
-
-        binding.etSender.setText("Google")
-        binding.etMessage.setText("G-749201 is your Google verification code. Do not share this code with anyone.")
-
-        updateLivePreview()
     }
 
     private fun setupLivePreviewListeners() {
@@ -193,31 +154,6 @@ class MainActivity : AppCompatActivity() {
                 binding.tvPreviewAction2.visibility = View.VISIBLE
             }
         }
-    }
-
-    private fun setupPresets() {
-        val onSenderClicked = View.OnClickListener { v ->
-            val chip = v as? com.google.android.material.chip.Chip
-            chip?.text?.toString()?.let {
-                binding.etSender.setText(it)
-                updateLivePreview()
-            }
-        }
-        binding.chipSender1.setOnClickListener(onSenderClicked)
-        binding.chipSender2.setOnClickListener(onSenderClicked)
-        binding.chipSender3.setOnClickListener(onSenderClicked)
-        binding.chipSender4.setOnClickListener(onSenderClicked)
-
-        val onMsgClicked = View.OnClickListener { v ->
-            val chip = v as? com.google.android.material.chip.Chip
-            chip?.text?.toString()?.let {
-                binding.etMessage.setText(it)
-                updateLivePreview()
-            }
-        }
-        binding.chipMsgTemplate1.setOnClickListener(onMsgClicked)
-        binding.chipMsgTemplate2.setOnClickListener(onMsgClicked)
-        binding.chipMsgTemplate3.setOnClickListener(onMsgClicked)
     }
 
     private fun setupDelayChips() {
