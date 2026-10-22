@@ -2,7 +2,9 @@ package com.wizzwuz.whatsappsim
 
 import android.Manifest
 import android.app.AlarmManager
+import android.app.DatePickerDialog
 import android.app.PendingIntent
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,12 +25,18 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.wizzwuz.whatsappsim.databinding.ActivityMainBinding
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var selectedAppType: AppType = AppType.WHATSAPP
+    private var isCustomScheduleMode: Boolean = false
     private var selectedDelaySeconds: Int = 5
+    private var customScheduledCalendar: Calendar? = null
+
     private var scheduledPendingIntent: PendingIntent? = null
     private var countDownTimer: CountDownTimer? = null
 
@@ -55,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         setupThemeToggle()
         setupAppTypeSelector()
         setupLivePreviewListeners()
-        setupDelayChips()
+        setupSchedulingOptions()
         setupActionButtons()
         updateLivePreview()
     }
@@ -129,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
         when (selectedAppType) {
             AppType.WHATSAPP -> {
-                binding.tvPreviewAppName.text = "WhatsApp"
+                binding.tvPreviewAppName.text = "Messages"
                 binding.ivPreviewSmallIcon.setImageResource(R.drawable.ic_whatsapp)
                 binding.ivPreviewSmallIcon.imageTintList =
                     ColorStateList.valueOf(ContextCompat.getColor(this, R.color.wa_green))
@@ -156,7 +164,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDelayChips() {
+    private fun setupSchedulingOptions() {
+        // Mode selector: Quick Delay vs Custom Date & Time
+        binding.chipGroupScheduleMode.setOnCheckedStateChangeListener { _, checkedIds ->
+            if (checkedIds.contains(R.id.chipModeCustom)) {
+                isCustomScheduleMode = true
+                binding.layoutQuickDelay.visibility = View.GONE
+                binding.layoutCustomDateTime.visibility = View.VISIBLE
+            } else {
+                isCustomScheduleMode = false
+                binding.layoutQuickDelay.visibility = View.VISIBLE
+                binding.layoutCustomDateTime.visibility = View.GONE
+            }
+        }
+
+        // Delay chips
         binding.chipGroupDelay.setOnCheckedStateChangeListener { _, checkedIds ->
             when {
                 checkedIds.contains(R.id.chipDelay5s) -> selectedDelaySeconds = 5
@@ -166,6 +188,58 @@ class MainActivity : AppCompatActivity() {
                 checkedIds.contains(R.id.chipDelay5m) -> selectedDelaySeconds = 300
                 else -> selectedDelaySeconds = 5
             }
+        }
+
+        // Custom Date & Time Picker Button
+        binding.btnPickDateTime.setOnClickListener {
+            showDateTimePicker()
+        }
+    }
+
+    private fun showDateTimePicker() {
+        val currentCal = Calendar.getInstance()
+        val year = currentCal.get(Calendar.YEAR)
+        val month = currentCal.get(Calendar.MONTH)
+        val day = currentCal.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+            val hour = currentCal.get(Calendar.HOUR_OF_DAY)
+            val minute = (currentCal.get(Calendar.MINUTE) + 5) % 60
+
+            val timePickerDialog = TimePickerDialog(this, { _, selectedHour, selectedMinute ->
+                val chosenCal = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, selectedYear)
+                    set(Calendar.MONTH, selectedMonth)
+                    set(Calendar.DAY_OF_MONTH, selectedDay)
+                    set(Calendar.HOUR_OF_DAY, selectedHour)
+                    set(Calendar.MINUTE, selectedMinute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
+                if (chosenCal.timeInMillis <= System.currentTimeMillis()) {
+                    Toast.makeText(this, R.string.msg_time_must_be_future, Toast.LENGTH_SHORT).show()
+                } else {
+                    customScheduledCalendar = chosenCal
+                    val sdf = SimpleDateFormat("EEE, MMM d, yyyy 'at' hh:mm a", Locale.getDefault())
+                    val diffSec = (chosenCal.timeInMillis - System.currentTimeMillis()) / 1000
+                    binding.tvSelectedDateTime.text =
+                        "📅 " + sdf.format(chosenCal.time) + "\n(arriving in " + formatDuration(diffSec) + ")"
+                }
+            }, hour, minute, false)
+
+            timePickerDialog.show()
+        }, year, month, day)
+
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
+        datePickerDialog.show()
+    }
+
+    private fun formatDuration(seconds: Long): String {
+        return when {
+            seconds < 60 -> "$seconds seconds"
+            seconds < 3600 -> "${seconds / 60}m ${seconds % 60}s"
+            else -> "${seconds / 3600}h ${(seconds % 3600) / 60}m"
         }
     }
 
@@ -210,6 +284,29 @@ class MainActivity : AppCompatActivity() {
             ?.ifEmpty { "Hello! This is a scheduled notification." }
             ?: "Hello! This is a scheduled notification."
 
+        val triggerAtMillis: Long
+        val durationSeconds: Int
+
+        if (isCustomScheduleMode) {
+            val customCal = customScheduledCalendar
+            if (customCal == null) {
+                Toast.makeText(this, "Please pick a date & time first!", Toast.LENGTH_SHORT).show()
+                showDateTimePicker()
+                return
+            }
+
+            if (customCal.timeInMillis <= System.currentTimeMillis()) {
+                Toast.makeText(this, R.string.msg_time_must_be_future, Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            triggerAtMillis = customCal.timeInMillis
+            durationSeconds = ((triggerAtMillis - System.currentTimeMillis()) / 1000).toInt()
+        } else {
+            triggerAtMillis = System.currentTimeMillis() + (selectedDelaySeconds * 1000L)
+            durationSeconds = selectedDelaySeconds
+        }
+
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, NotificationPublisherReceiver::class.java).apply {
             putExtra(NotificationPublisherReceiver.EXTRA_APP_TYPE, selectedAppType.idName)
@@ -225,8 +322,6 @@ class MainActivity : AppCompatActivity() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         scheduledPendingIntent = pendingIntent
-
-        val triggerAtMillis = System.currentTimeMillis() + (selectedDelaySeconds * 1000L)
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -250,10 +345,15 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        val delayText = getString(R.string.msg_scheduled, selectedDelaySeconds)
-        Toast.makeText(this, delayText, Toast.LENGTH_LONG).show()
+        val confirmation = if (isCustomScheduleMode) {
+            val sdf = SimpleDateFormat("MMM d, hh:mm a", Locale.getDefault())
+            getString(R.string.msg_scheduled_at, sdf.format(triggerAtMillis))
+        } else {
+            getString(R.string.msg_scheduled, durationSeconds)
+        }
+        Toast.makeText(this, confirmation, Toast.LENGTH_LONG).show()
 
-        startCountdown(selectedDelaySeconds)
+        startCountdown(durationSeconds)
 
         if (binding.switchAutoMinimize.isChecked) {
             moveTaskToBack(true)
@@ -269,7 +369,7 @@ class MainActivity : AppCompatActivity() {
             override fun onTick(millisUntilFinished: Long) {
                 val secLeft = (millisUntilFinished / 1000L) + 1
                 binding.tvScheduleStatus.text =
-                    "⏳ Notification arriving in $secLeft seconds... (App can be closed/locked)"
+                    "⏳ Notification arriving in ${formatDuration(secLeft)}... (App can be closed/locked)"
             }
 
             override fun onFinish() {

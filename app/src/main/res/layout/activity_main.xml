@@ -99,7 +99,7 @@
                             android:id="@+id/tvPreviewAppName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="WhatsApp"
+                            android:text="Messages"
                             android:textStyle="bold"
                             android:textSize="12sp"
                             android:textColor="@color/notif_header_text" />
@@ -245,7 +245,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Sender Card (Clean without presets) -->
+            <!-- Sender Card (Clean input) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -283,7 +283,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Message Card (Clean without presets) -->
+            <!-- Message Card (Clean input) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -323,7 +323,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Delay & Schedule Options Card -->
+            <!-- Scheduling Options Card (Delay vs Custom Date & Time) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -343,63 +343,130 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/delay_label"
+                        android:text="@string/schedule_options_title"
                         android:textStyle="bold"
                         android:textSize="14sp"
                         android:textColor="@color/text_primary" />
 
-                    <!-- Delay chips -->
+                    <!-- Schedule Mode Selector: Quick Delay vs Custom Date/Time -->
                     <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupDelay"
+                        android:id="@+id/chipGroupScheduleMode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         app:singleSelection="true">
 
                         <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDelay5s"
+                            android:id="@+id/chipModeDelay"
                             style="@style/Widget.MaterialComponents.Chip.Choice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
-                            android:text="5s" />
+                            android:text="@string/schedule_mode_delay" />
 
                         <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDelay10s"
+                            android:id="@+id/chipModeCustom"
                             style="@style/Widget.MaterialComponents.Chip.Choice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="10s" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDelay30s"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="30s" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDelay1m"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="1 min" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDelay5m"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="5 min" />
+                            android:text="@string/schedule_mode_custom" />
 
                     </com.google.android.material.chip.ChipGroup>
+
+                    <!-- Quick Delay Section -->
+                    <LinearLayout
+                        android:id="@+id/layoutQuickDelay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupDelay"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDelay5s"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="true"
+                                android:text="5s" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDelay10s"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="10s" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDelay30s"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="30s" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDelay1m"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="1 min" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDelay5m"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="5 min" />
+
+                        </com.google.android.material.chip.ChipGroup>
+                    </LinearLayout>
+
+                    <!-- Custom Date & Time Picker Section -->
+                    <LinearLayout
+                        android:id="@+id/layoutCustomDateTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPickDateTime"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="50dp"
+                            android:text="@string/btn_pick_date_time"
+                            android:textColor="@color/wa_teal"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_calendar"
+                            app:iconGravity="textStart"
+                            app:iconTint="@color/wa_teal"
+                            app:strokeColor="@color/wa_teal" />
+
+                        <TextView
+                            android:id="@+id/tvSelectedDateTime"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="No custom date &amp; time selected yet"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                    </LinearLayout>
 
                     <!-- Auto minimize option -->
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switchAutoMinimize"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="14dp"
                         android:checked="true"
                         android:text="Auto minimize app on trigger"
                         android:textColor="@color/text_primary" />

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App Label for Notifications -->
+    <!-- App Label for Notifications (displayed in System Notification Header) -->
     <string name="app_name">Messages</string>
-    <!-- App Label for Launcher Drawer -->
-    <string name="launcher_name">Messages</string>
-    <string name="title_simulator">Notification Simulator</string>
+    <!-- App Label for Launcher Drawer / Home Screen -->
+    <string name="launcher_name">NotifySim</string>
+    <string name="title_simulator">NotifySim</string>
     <string name="subtitle_simulator">Simulate WhatsApp and Google Messages notifications</string>
 
     <!-- App Selectors -->
@@ -18,7 +18,12 @@
     <string name="message_text_label">Message Content</string>
     <string name="message_text_hint">Type simulated message here...</string>
 
-    <string name="delay_label">Schedule Delay</string>
+    <!-- Scheduling Options -->
+    <string name="schedule_options_title">Schedule Options</string>
+    <string name="schedule_mode_delay">Quick Delay</string>
+    <string name="schedule_mode_custom">Custom Date &amp; Time 📅</string>
+    <string name="btn_pick_date_time">Pick Date &amp; Time</string>
+    <string name="msg_time_must_be_future">Please select a date and time in the future.</string>
 
     <string name="btn_test_now">Test Notification (Instant)</string>
     <string name="btn_schedule">Schedule Notification</string>
@@ -35,6 +40,7 @@
     <string name="action_copy_code">Copy code</string>
 
     <string name="msg_scheduled">Notification scheduled in %1$d seconds! Minimize app or lock screen.</string>
+    <string name="msg_scheduled_at">Notification scheduled for %1$s!</string>
     <string name="msg_cancelled">Scheduled notification cancelled.</string>
     <string name="msg_permission_required">Notification permission is required to display simulated notifications.</string>
 </resources>
